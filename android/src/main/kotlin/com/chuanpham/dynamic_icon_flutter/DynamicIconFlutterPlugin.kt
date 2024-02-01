@@ -1,4 +1,5 @@
 package com.chuanpham.dynamic_icon_flutter
+
 import android.app.Activity
 import android.app.Application
 import android.content.ComponentName
@@ -38,31 +39,69 @@ class DynamicIconFlutterPlugin : ContextAwarePlugin() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        } else if (call.method == "getCurrentIcon") {
+            try {
+                val currentIcon = getCurrenIcon()
+                result.success(currentIcon)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         } else {
             result.notImplemented()
         }
     }
 
-    //dynamically change app icon
+    private fun getCurrenIcon(): String? {
+        // get current activity name
+        val currentNameActivity = activity?.componentName?.className
+        val currentActivity = currentNameActivity?.split(".")?.last()
+        return currentActivity
+    }
+
+    // dynamically change app icon
     private fun setIcon(targetIcon: String, activitiesArray: List<String>) {
+        // get package manager
         val packageManager: PackageManager = applicationContext!!.packageManager
+        // get component name
         val packageName = applicationContext!!.packageName
+        // get current activity name
+        val currentNameActivity = activity?.componentName?.className
+        val currentActivity = currentNameActivity?.split(".")?.last()
+        // get class name
         val className = StringBuilder()
         className.append(packageName)
         className.append(".")
         className.append(targetIcon)
 
-        for (value in activitiesArray) {
-            val action = if (value == targetIcon) {
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-            } else {
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-            }
-            packageManager.setComponentEnabledSetting(
-                    ComponentName(packageName!!, "$packageName.$value"),
-                    action, PackageManager.DONT_KILL_APP
-            )
+        if (currentActivity == targetIcon) {
+            return
         }
+
+        packageManager.setComponentEnabledSetting(
+            ComponentName(packageName!!, "$packageName.$targetIcon"),
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP
+        )
+        packageManager.setComponentEnabledSetting(
+            ComponentName(packageName!!, "$packageName.$currentActivity"),
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED or PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+            PackageManager.DONT_KILL_APP
+        )
+
+        // for (value in activitiesArray) {
+        //     if (value == targetIcon) {
+        //         action = PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+        //     } else {
+        //         action = PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        //     }
+        //     println("HuyPQ_action: $action")
+        //     println("HuyPQ_packageName_value:  $packageName.$value")
+        //     packageManager.setComponentEnabledSetting(
+        //         ComponentName(packageName!!, "$packageName.$value"),
+        //         action,
+        //         PackageManager.DONT_KILL_APP
+        //     )
+        // }
 
         //finish current activity & launch new intent to prevent app from killing itself!
         //check if android version is greater than 8
@@ -71,9 +110,9 @@ class DynamicIconFlutterPlugin : ContextAwarePlugin() {
             intent.setClassName(packageName!!, className.toString())
             intent.action = Intent.ACTION_MAIN
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK
-             this.activity?.finish()
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            this.activity?.finish()
             startActivity(this.applicationContext!!, intent, null)
         }
     }
@@ -85,11 +124,12 @@ abstract class ContextAwarePlugin : FlutterPlugin, ActivityAware, MethodChannel.
 
     abstract val pluginName: String
 
-    private lateinit var channel : MethodChannel
+    private lateinit var channel: MethodChannel
 
     protected val activity get() = activityReference.get()
-    protected val applicationContext get() =
-        contextReference.get() ?: activity?.applicationContext
+    protected val applicationContext
+        get() =
+            contextReference.get() ?: activity?.applicationContext
 
     private var activityReference = WeakReference<Activity>(null)
     private var contextReference = WeakReference<Context>(null)

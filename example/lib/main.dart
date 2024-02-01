@@ -1,10 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:io';
+
 import 'package:dynamic_icon_flutter/dynamic_icon_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -26,11 +28,17 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    DynamicIconFlutter.getAlternateIconName().then((v) {
-      setState(() {
-        currentIconName = v ?? "`primary`";
-      });
-    });
+    // if (Platform.isIOS) {
+    //   DynamicIconFlutter.getAlternateIconName().then((v) {
+    //     setState(() {
+    //       currentIconName = v ?? "`primary`";
+    //     });
+    //   });
+    // } else {
+    //   setState(() {
+    //     currentIconName = "`primary`";
+    //   });
+    // }
   }
 
   @override
@@ -56,93 +64,45 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               OutlinedButton.icon(
-                icon: const Icon(Icons.ac_unit),
-                label: const Text("Team Fortress"),
+                icon: const Icon(Icons.fiber_new),
+                label: const Text("Lunar New Year"),
                 onPressed: () async {
-                  try {
-                    //print(await DynamicIconFlutter.supportsAlternateIcons);
-                    if (await DynamicIconFlutter.supportsAlternateIcons) {
-                      await DynamicIconFlutter.setAlternateIconName(
-                          "teamfortress");
+                  if (Platform.isAndroid) {
+                    const iconList = <String>['lunar_new_year', 'MainActivity'];
+                    DynamicIconFlutter.setIcon(
+                      icon: iconList[0],
+                      listAvailableIcon: iconList,
+                    );
+                    return;
+                  }
+
+                  {
+                    try {
+                      DynamicIconFlutter.setAlternateIconName('lunarNewYear');
+                    } on PlatformException {
+                      // ignore: avoid_print
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       _scaffoldKey.currentState?.showSnackBar(const SnackBar(
-                        content: Text("App icon change successful"),
+                        content: Text("Failed to change app icon"),
                       ));
-                      DynamicIconFlutter.getAlternateIconName().then((v) {
-                        setState(() {
-                          currentIconName = v ?? "`primary`";
-                        });
-                      });
-                      return;
                     }
-                  } on PlatformException {
-                    // ignore: avoid_print
-                    _scaffoldKey.currentState?.hideCurrentSnackBar();
-                    _scaffoldKey.currentState?.showSnackBar(const SnackBar(
-                      content: Text("Failed to change app icon"),
-                    ));
                   }
                 },
               ),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.ac_unit),
-                label: const Text("Photos"),
-                onPressed: () async {
-                  try {
-                    if (await DynamicIconFlutter.supportsAlternateIcons) {
-                      await DynamicIconFlutter.setAlternateIconName("photos");
-                      _scaffoldKey.currentState?.hideCurrentSnackBar();
-                      _scaffoldKey.currentState?.showSnackBar(const SnackBar(
-                        content: Text("App icon change successful"),
-                      ));
-                      DynamicIconFlutter.getAlternateIconName().then((v) {
-                        setState(() {
-                          currentIconName = v ?? "`primary`";
-                        });
-                      });
-                      return;
-                    }
-                  } on PlatformException {
-                    _scaffoldKey.currentState?.hideCurrentSnackBar();
-                    _scaffoldKey.currentState?.showSnackBar(const SnackBar(
-                      content: Text("Failed to change app icon"),
-                    ));
-                  }
-                },
-              ),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.ac_unit),
-                label: const Text("Chills"),
-                onPressed: () async {
-                  try {
-                    if (await DynamicIconFlutter.supportsAlternateIcons) {
-                      await DynamicIconFlutter.setAlternateIconName("chills");
-                      _scaffoldKey.currentState?.hideCurrentSnackBar();
-                      _scaffoldKey.currentState?.showSnackBar(const SnackBar(
-                        content: Text("App icon change successful"),
-                      ));
-                      DynamicIconFlutter.getAlternateIconName().then((v) {
-                        setState(() {
-                          currentIconName = v ?? "`primary`";
-                        });
-                      });
-                      return;
-                    }
-                  } on PlatformException {
-                    _scaffoldKey.currentState?.hideCurrentSnackBar();
-                    _scaffoldKey.currentState?.showSnackBar(const SnackBar(
-                      content: Text("Failed to change app icon"),
-                    ));
-                  }
-                },
-              ),
-              const SizedBox(
-                height: 28,
-              ),
+              const SizedBox(height: 12),
               OutlinedButton.icon(
                 icon: const Icon(Icons.restore_outlined),
                 label: const Text("Restore Icon"),
                 onPressed: () async {
+                  if (Platform.isAndroid) {
+                    const iconList = <String>['lunar_new_year', 'MainActivity'];
+                    DynamicIconFlutter.setIcon(
+                      icon: iconList[1],
+                      listAvailableIcon: iconList,
+                    );
+                    return;
+                  }
+
                   try {
                     if (await DynamicIconFlutter.supportsAlternateIcons) {
                       await DynamicIconFlutter.setAlternateIconName(null);
@@ -150,11 +110,11 @@ class _MyAppState extends State<MyApp> {
                       _scaffoldKey.currentState?.showSnackBar(const SnackBar(
                         content: Text("App icon restore successful"),
                       ));
-                      DynamicIconFlutter.getAlternateIconName().then((v) {
-                        setState(() {
-                          currentIconName = v ?? "`primary`";
-                        });
-                      });
+                      // DynamicIconFlutter.getAlternateIconName().then((v) {
+                      //   setState(() {
+                      //     currentIconName = v ?? "`primary`";
+                      //   });
+                      // });
                       return;
                     }
                   } on PlatformException {
